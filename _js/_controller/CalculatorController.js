@@ -81,18 +81,20 @@ class CalculatorController {
         if (!isNaN(value)) {
             this.concatNumber(value);
             this.display = this.number;
+            this.history = this.number;
+            console.log(this.history);
         } else if (value == "." || value == ",") {
             this.addDot();
             this.display = this.number;
         } else if (this.isOperator(value)) {
             if (this.number != "") {
-                this.history = this.number;
                 this.operation = this.number;
             }
             if (this.operation.length == 3) {
                 let result = this.calc();
                 this.clearAll();
                 this.operation = result;
+                this.display = result;
             }
             if (this.isOperator(this.getLastOperation())) {
                 this.setLastOperation(value);
@@ -100,8 +102,9 @@ class CalculatorController {
                 this.history = this.displayOperator(value);
                 this.operation = value;
             }
-            this.displayHistory = this.history.join(" ");
+            console.log(this.history);
         }
+        this.displayHistory = this.history.join(" ");
     }
 
     validateValue(value) {
@@ -156,6 +159,8 @@ class CalculatorController {
                     this.operation = this.number;
                     let result = this.calc();
                     this.clearAll();
+                    this._history = [];
+                    this.displayHistory = this.history;
                     this.display = result;
                     this.number = result;
                 }
