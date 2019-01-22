@@ -19,6 +19,7 @@ class CalculatorController {
 
     clearAll() {
         this._operation = [];
+        this.display = "0";
     }
 
     squared() {
@@ -29,14 +30,21 @@ class CalculatorController {
 
     }
 
+    calcPercent() {
+    }
+
     calc() {
         let result = 0;
-        let operation = "";
-        this.operation.forEach((value) => {
-            operation += value;
-        });
-        result = eval(operation);
+        result = eval(this.operation.join(""));
         return result;
+    }
+
+    getLastHistory() {
+        return this.history[this.history.length - 1];
+    }
+
+    setLastHistory(value) {
+        this.history[this.history.length - 1] = value;
     }
 
     getLastOperation() {
@@ -48,12 +56,14 @@ class CalculatorController {
     }
 
     displayOperator(operator) {
-        if (operator == "*") {
-            return "x";
-        } else if (operator == "/") {
-            return "÷";
-        } else {
-            return operator;
+        if (operator != "%") {
+            if (operator == "*") {
+                return "x";
+            } else if (operator == "/") {
+                return "÷";
+            } else {
+                return operator;
+            }
         }
     }
 
@@ -81,13 +91,12 @@ class CalculatorController {
         if (!isNaN(value)) {
             this.concatNumber(value);
             this.display = this.number;
-            this.history = this.number;
-            console.log(this.history);
         } else if (value == "." || value == ",") {
             this.addDot();
             this.display = this.number;
         } else if (this.isOperator(value)) {
             if (this.number != "") {
+                this.history = this.number;
                 this.operation = this.number;
             }
             if (this.operation.length == 3) {
@@ -102,7 +111,6 @@ class CalculatorController {
                 this.history = this.displayOperator(value);
                 this.operation = value;
             }
-            console.log(this.history);
         }
         this.displayHistory = this.history.join(" ");
     }
@@ -156,13 +164,15 @@ class CalculatorController {
             case "=":
             case "Enter":
                 if (this.isOperator(this.getLastOperation())) {
-                    this.operation = this.number;
-                    let result = this.calc();
-                    this.clearAll();
-                    this._history = [];
-                    this.displayHistory = this.history;
-                    this.display = result;
-                    this.number = result;
+                    if (this.number != "") {
+                        this.operation = this.number;
+                        let result = this.calc();
+                        this.clearAll();
+                        this._history = [];
+                        this.displayHistory = this.history;
+                        this.display = result;
+                        this.number = result;
+                    }
                 }
                 break;
             default:
@@ -214,7 +224,6 @@ class CalculatorController {
     }
 
     set displayHistory(value) {
-        console.log(value);
         this._displayHistory.innerHTML = value;
     }
 
