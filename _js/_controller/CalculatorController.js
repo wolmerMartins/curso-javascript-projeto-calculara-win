@@ -1,6 +1,5 @@
 class CalculatorController {
     constructor() {
-        this._isCalcPercent = false;
         this._history = [];
         this._number = "";
         this._operation = [];
@@ -20,7 +19,9 @@ class CalculatorController {
 
     clearAll() {
         this._operation = [];
+        this._history = [];
         this.display = "0";
+        this.displayHistory = this.history;
     }
 
     squared() {
@@ -31,12 +32,11 @@ class CalculatorController {
 
     }
 
-    calcPercent(value) {
-        console.log(value);
-        let result = (this.operation[0] * this.number) / 100;
-        this.number = result;
-        this.history = result;
-        this.display = result;
+    calcPercent() {
+        if (this.operation == 3) {
+            let result = (this.operation[0] * this.getLastOperation()) / 100;
+            return result;
+        }
     }
 
     calc() {
@@ -78,7 +78,7 @@ class CalculatorController {
     }
 
     isOperator(value) {
-        return (["+", "-", "*", "/"].indexOf(value) > -1);
+        return (["+", "-", "*", "/", "%"].indexOf(value) > -1);
     }
 
     addDot() {
@@ -97,39 +97,30 @@ class CalculatorController {
         if (!isNaN(value)) {
             this.concatNumber(value);
             this.display = this.number;
-        } else if (value == "." || value == ",") {
-            this.addDot();
-            this.display = this.number;
-        } else if (this.isOperator(value) || value == "%") {
-            if (this.number != "" && value != "%") {
-                if (this.history.length == 0 || this.isOperator(this.getLastHistory())) {
-                    this.history = this.number;
-                }
+        } else if (this.isOperator(value)) {
+            let result = 0;
+            if (this.number != "") {
+                this.history = this.number;
                 this.operation = this.number;
             }
             if (this.operation.length == 3) {
-                let result = this.calc();
-                this.clearAll();
+                result = this.calc();
+                this._operation = [];
                 this.operation = result;
                 this.display = result;
             }
-            if (value != "%") {
-                if (this.isOperator(this.getLastOperation())) {
-                    this.setLastOperation(value);
-                    this.setLastHistory(this.displayOperator(value));
-                } else {
-                    this.history = this.displayOperator(value);
-                    this.operation = value;
-                }
+            if (this.isOperator(this.getLastOperation())) {
+                this.setLastOperation(value);
+                this.setLastHistory(value);
             } else {
-                this.calcPercent(value);
+                this.history = value;
+                this.operation = value;
             }
+            this.displayHistory = this.history.join(" ");
         }
-        this.displayHistory = this.history.join(" ");
     }
 
     validateValue(value) {
-        console.log("pre-switch: ", value);
         switch(value) {
             case "0":
             case "1":
@@ -141,10 +132,8 @@ class CalculatorController {
             case "7":
             case "8":
             case "9":
-            case "%":
             case "-":
             case "+":
-                console.log(1, "history: ", this.history, ", operation: ", this.operation);
                 this.addOperation(value);
                 break;
             case "÷":
@@ -178,9 +167,7 @@ class CalculatorController {
                 break;
             case "=":
             case "Enter":
-                console.log(2, "history: ", this.history, ", operation: ", this.operation);
-                console.log(value);
-                if (this.isOperator(this.getLastOperation()) && value != "%") {
+                /*if (this.isOperator(this.getLastOperation())) {
                     if (this.number != "") {
                         this.operation = this.number;
                         let result = this.calc();
@@ -189,9 +176,8 @@ class CalculatorController {
                         this.displayHistory = this.history;
                         this.display = result;
                         this.number = result;
-                        this.isCalcPercent = false;
                     }
-                }
+                }*/
                 break;
             default:
         }
@@ -199,49 +185,47 @@ class CalculatorController {
 
     initializeKeyboard() {
         window.addEventListener("keyup", e => {
+            if (e.key == "%") {
+                this.calcPercent();
+            }
             this.validateValue(e.key);
-        });
+        }, true);
     }
 
     initializeButtonsEvents() {
         let buttons = document.querySelectorAll(".btn");
         buttons.forEach((button) => {
             button.addEventListener("click", e => {
+                if (button.innerHTML == "%") {
+                    this.calcPercent();
+                }
                 this.validateValue(button.innerHTML);
-            });
+            }, true);
         });
-    }
-
-    get isCalcPercent() {
-        return this._isCalcPercent;
-    }
-
-    set isCalcPercent(value) {
-        this._isCalcPercent = value;
     }
 
     get history() {
         return this._history;
     }
 
-    set history(value) {
-        this._history.push(value);
+    set history(history) {
+        this._history.push(history);
     }
 
     get number() {
         return this._number;
     }
 
-    set number(value) {
-        this._number = value;
+    set number(number) {
+        this._number = number;
     }
 
     get operation() {
         return this._operation;
     }
 
-    set operation(value) {
-        this._operation.push(value);
+    set operation(operation) {
+        this._operation.push(operation);
         this.number = "";
     }
 
@@ -249,15 +233,15 @@ class CalculatorController {
         return this._displayHistory.innerHTML;
     }
 
-    set displayHistory(value) {
-        this._displayHistory.innerHTML = value;
+    set displayHistory(displayHistory) {
+        this._displayHistory.innerHTML = displayHistory;
     }
 
     get display() {
         return this._display.innerHTML;
     }
 
-    set display(value) {
-        this._display.innerHTML = value;
+    set display(display) {
+        this._display.innerHTML = display;
     }
 }
