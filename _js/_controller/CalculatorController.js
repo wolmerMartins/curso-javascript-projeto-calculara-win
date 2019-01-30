@@ -1,7 +1,7 @@
 class CalculatorController {
     constructor() {
         this._history = [];
-        this._number = "";
+        this._number = "0";
         this._operation = [];
         this._displayHistory = document.querySelector("#history");
         this._display = document.querySelector("#display");
@@ -14,15 +14,20 @@ class CalculatorController {
     }
 
     clearLastEntry() {
-        this.number = "0";
-        this.display = this.number;
+        if (typeof this.number == "string") {
+            this.number = this.number.replace(this.number[this.number.length - 1], "");
+            if (this.number == "") {
+                this.number = "0";
+            }
+            this.display = this.number;
+        }
     }
 
     clearAll() {
         this._operation = [];
         this._history = [];
-        this.number = "";
-        this.display = "0";
+        this.number = "0";
+        this.display = this.number;
         this.displayHistory = this.history;
     }
 
@@ -93,7 +98,7 @@ class CalculatorController {
     }
 
     addDot() {
-        if (this.number == "") {
+        if (this.number == "0") {
             this.number = "0.";
         } else if (!this.isDecimal()) {
             this.number += ".";
@@ -102,7 +107,7 @@ class CalculatorController {
     }
 
     concatNumber(value) {
-        if (this.number == "0") this.number = "";
+        if (this.number == "0" || (this.operation.length == 0 && typeof this.number != "string")) this.number = "";
         return this.number += value;
     }
 
@@ -112,10 +117,8 @@ class CalculatorController {
             this.display = this.changeDotForComma(this.number);
         } else if (this.isOperator(value)) {
             let result = 0;
-            if (this.number != "") {
-                this.history = this.changeDotForComma(this.number);
-                this.operation = this.number;
-            }
+            this.history = this.changeDotForComma(this.number);
+            this.operation = this.number;
             if (this.operation.length == 3) {
                 result = this.calc();
                 this._operation = [];
@@ -172,6 +175,7 @@ class CalculatorController {
             case "CE":
             case "Backspace":
                 this.clearLastEntry();
+                console.log(this.operation);
                 break;
             case "C":
             case "Escape":
