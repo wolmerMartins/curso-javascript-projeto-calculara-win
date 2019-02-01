@@ -9,16 +9,38 @@ class CalculatorController {
         this.initializeKeyboard();
     }
 
-    changeSign() {
-
+    changeSign(clickX, clickY) {
+        if (clickX > 0 || clickY > 0) {
+            if (this.number < 0) {
+                this.number = this.number.toString().replace("-", "");
+            } else {
+                this.number = "-" + this.number;
+            }
+            this.display = this.changeDotForComma(this.number);
+        }
     }
 
-    clearLastEntry() {
-        if (typeof this.number == "string") {
-            this.number = this.number.replace(this.number[this.number.length - 1], "");
-            if (this.number == "") {
-                this.number = "0";
+    oneDivideX(clickX, clickY) {
+        if (clickX > 0 || clickY > 0) {
+
+        }
+    }
+
+    clearLastDigit(clickX, clickY) {
+        if (clickX > 0 || clickY > 0) {
+            if (typeof this.number == "string") {
+                this.number = this.number.replace(this.number[this.number.length - 1], "");
+                if (this.number == "") {
+                    this.number = "0";
+                }
+                this.display = this.changeDotForComma(this.number);
             }
+        }
+    }
+
+    clearLastEntry(clickX, clickY) {
+        if (clickX > 0 || clickY > 0) {
+            this.number = "0";
             this.display = this.number;
         }
     }
@@ -40,7 +62,7 @@ class CalculatorController {
     }
 
     calcPercent(clickX, clickY) {
-        if (clickX != 0 && clickY != 0) {
+        if (clickX > 0 || clickY > 0) {
             if (this.operation.length == 2 && this.number != "") {
                 let result = (parseFloat(this.operation[0]) * parseFloat(this.number)) / 100;
                 this.history = this.changeDotForComma(result);
@@ -117,8 +139,10 @@ class CalculatorController {
             this.display = this.changeDotForComma(this.number);
         } else if (this.isOperator(value)) {
             let result = 0;
-            this.history = this.changeDotForComma(this.number);
-            this.operation = this.number;
+            if (this.number != "") {
+                this.history = this.changeDotForComma(this.number);
+                this.operation = this.number;
+            }
             if (this.operation.length == 3) {
                 result = this.calc();
                 this._operation = [];
@@ -173,16 +197,21 @@ class CalculatorController {
                 this.squared();
                 break;
             case "CE":
-            case "Backspace":
-                this.clearLastEntry();
-                console.log(this.operation);
+                this.clearLastEntry(clickX, clickY);
                 break;
             case "C":
             case "Escape":
                 this.clearAll();
                 break;
             case "±":
-                this.changeSign();
+                this.changeSign(clickX, clickY);
+                break;
+            case "←":
+            case "Backspace":
+                this.clearLastDigit(clickX, clickY);
+                break;
+            case "¹/x":
+                this.oneDivideX(clickX, clickY);
                 break;
             case "=":
             case "Enter":
@@ -203,6 +232,7 @@ class CalculatorController {
                 }
                 break;
             default:
+                console.log(value);
         }
     }
 
