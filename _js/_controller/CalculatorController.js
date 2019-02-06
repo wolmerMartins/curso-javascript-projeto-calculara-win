@@ -1,5 +1,6 @@
 class CalculatorController {
     constructor() {
+        this._resultDivide = 0;
         this._history = [];
         this._number = "0";
         this._operation = [];
@@ -21,8 +22,29 @@ class CalculatorController {
     }
 
     oneDivideX(clickX, clickY) {
+        const first = "1/(";
+        const last = ")";
         if (clickX > 0 || clickY > 0) {
-
+            if (this.history.length == 0 || this.getLastHistory().indexOf("1/(") == -1) {
+                this.history = first + this.number + last;
+                this.displayHistory = this.history.join(" ");
+                this.resultDivide = 1 / this.number;
+                this.number = this.resultDivide;
+            } else {
+                this.setLastHistory(first + this.getLastHistory() + last);
+                let firstNumber = this.getLastHistory();
+                while (firstNumber.indexOf(first) > -1) {
+                    firstNumber = firstNumber.replace(first, "");
+                    firstNumber = firstNumber.replace(last, "");
+                }
+                if (this.display == firstNumber) {
+                    this.number = this.resultDivide;
+                } else {
+                    this.number = firstNumber;
+                }
+            }
+            this.displayHistory = this.history.join(" ");
+            this.display = this.changeDotForComma(this.number);
         }
     }
 
@@ -249,6 +271,14 @@ class CalculatorController {
                 this.validateValue(button.innerHTML, e.clientX, e.clickY);
             }, true);
         });
+    }
+
+    get resultDivide() {
+        return this._resultDivide;
+    }
+
+    set resultDivide(resultDivide) {
+        this._resultDivide = resultDivide;
     }
 
     get history() {
