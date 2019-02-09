@@ -1,5 +1,6 @@
 class CalculatorController {
     constructor() {
+        this._isDisplayHistory = true;
         this._resultDivide = 0;
         this._history = [];
         this._number = "0";
@@ -11,7 +12,7 @@ class CalculatorController {
     }
 
     changeSign(clickX, clickY) {
-        if (clickX > 0 || clickY > 0) {
+        if (clickX > 0 && clickY > 0) {
             if (this.number < 0) {
                 this.number = this.number.toString().replace("-", "");
             } else {
@@ -24,8 +25,8 @@ class CalculatorController {
     oneDivideX(clickX, clickY) {
         const first = "1/(";
         const last = ")";
-        if (clickX > 0 || clickY > 0) {
-            if (this.history.length == 0 || this.getLastHistory().indexOf("1/(") == -1) {
+        if (clickX > 0 && clickY > 0) {
+            if (this.history.length == 0 || this.getLastHistory().indexOf("1/(") < 0) {
                 this.history = first + this.number + last;
                 this.displayHistory = this.history.join(" ");
                 this.resultDivide = 1 / this.number;
@@ -45,11 +46,12 @@ class CalculatorController {
             }
             this.displayHistory = this.history.join(" ");
             this.display = this.changeDotForComma(this.number);
+            this.isDisplayHistory = false;
         }
     }
 
     clearLastDigit(clickX, clickY) {
-        if (clickX > 0 || clickY > 0) {
+        if (clickX > 0 && clickY > 0) {
             if (typeof this.number == "string") {
                 this.number = this.number.replace(this.number[this.number.length - 1], "");
                 if (this.number == "") {
@@ -61,7 +63,7 @@ class CalculatorController {
     }
 
     clearLastEntry(clickX, clickY) {
-        if (clickX > 0 || clickY > 0) {
+        if (clickX > 0 && clickY > 0) {
             this.number = "0";
             this.display = this.number;
         }
@@ -75,16 +77,46 @@ class CalculatorController {
         this.displayHistory = this.history;
     }
 
-    squared() {
-
+    squared(clickX, clickY) {
+        let first = "sqr(";
+        let last = ")";
+        if (clickX > 0 && clickY > 0) {
+            if (this.number != "0") {
+                if (this.history.length == 0 || this.getLastHistory().indexOf(first) < 0) {
+                    this.history = first + this.number + last;
+                } else {
+                    this.setLastHistory(first + this.getLastHistory() + last);
+                }
+                this.displayHistory = this.history.join(" ");
+                let result = Math.pow(this.number, 2);
+                this.display = result;
+                this.number = result;
+                this.isDisplayHistory = false;
+            }
+        }
     }
 
-    squareRoot() {
-
+    squareRoot(clickX, clickY) {
+        let first = "√(";
+        let last = ")";
+        if (clickX > 0 && clickY > 0) {
+            if (this.number != "0") {
+                if (this.history.length == 0 || this.getLastHistory().indexOf(first) < 0) {
+                    this.history = first + this.number + last;
+                } else {
+                    this.setLastHistory(first + this.getLastHistory() + last);
+                }
+                this.displayHistory = this.history.join(" ");
+                let result = Math.sqrt(this.number);
+                this.display = this.changeDotForComma(result);
+                this.number = result;
+                this.isDisplayHistory = false;
+            }
+        }
     }
 
     calcPercent(clickX, clickY) {
-        if (clickX > 0 || clickY > 0) {
+        if (clickX > 0 && clickY > 0) {
             if (this.operation.length == 2 && this.number != "") {
                 let result = (parseFloat(this.operation[0]) * parseFloat(this.number)) / 100;
                 this.history = this.changeDotForComma(result);
@@ -162,8 +194,11 @@ class CalculatorController {
         } else if (this.isOperator(value)) {
             let result = 0;
             if (this.number != "") {
-                this.history = this.changeDotForComma(this.number);
+                if (this.isDisplayHistory) {
+                    this.history = this.changeDotForComma(this.number);
+                }
                 this.operation = this.number;
+                if (!this.isDisplayHistory) this.isDisplayHistory = true;
             }
             if (this.operation.length == 3) {
                 result = this.calc();
@@ -213,10 +248,10 @@ class CalculatorController {
             case "%":
                 this.calcPercent(clickX, clickY);
             case "√":
-                this.squareRoot();
+                this.squareRoot(clickX, clickY);
                 break;
             case "x²":
-                this.squared();
+                this.squared(clickX, clickY);
                 break;
             case "CE":
                 this.clearLastEntry(clickX, clickY);
@@ -268,9 +303,17 @@ class CalculatorController {
         let buttons = document.querySelectorAll(".btn");
         buttons.forEach((button) => {
             button.addEventListener("click", e => {
-                this.validateValue(button.innerHTML, e.clientX, e.clickY);
+                this.validateValue(button.innerHTML, e.clientX, e.clientY);
             }, true);
         });
+    }
+
+    get isDisplayHistory() {
+        return this._isDisplayHistory;
+    }
+
+    set isDisplayHistory(isDisplayHistory) {
+        this._isDisplayHistory = isDisplayHistory;
     }
 
     get resultDivide() {
